@@ -1,20 +1,33 @@
 #!/bin/bash
 
 # mouse.sh - cheese-loving Mousie Mouse
+# Created by Antti Myyrä for the course Distributed Systems, fall 2015
 
-trap "ssh ukko003 pkill -u $(whoami) nc" 2
+# When ended with SIGINT, will cleanup its location file and nc from the remote node
+function finished {
+  ssh -o StrictHostKeyChecking=no $(<mouse_location) pkill -u $(whoami) nc
+  rm mouse_location
+}
+trap finished 2
 
+# Saving port number for some ssh action, and creating a random number generator for choosing the node
 portnumber=$(<nc_port_number)
+random=$$$(date +%s)
 
-# TODO select random machine from ukkonodes to log in to, save to file so can be cleaned
+# Going through ukkonodes and selecting one randomly to hide into
+IFS=$'\n' nodes=($(<ukkonodes))
+node=${nodes[$random % ${#nodes[@]} ] }
+echo "Going to $node to eat some cheese (and to hide from cats)."
+echo "$node" > mouse_location
 
-ssh ukko003 nc -l $portnumber -k| while read msg;
+# Going to the specified node and listening in on any possible attacking cats
+ssh -o StrictHostKeyChecking=no $node nc -l $portnumber -k| while read msg;
   do
     echo "Received message: $msg"
     if [[ $msg == "MEOW" ]]; then
-      attacker=$(ssh ukko003 ps -u $(whoami) | grep "chase_cat.sh" | awk '{print $1}')
+      attacker=$(ssh $node ps -u $(whoami) | grep "chase_cat.sh" | awk '{print $1}')
       echo "Got caught! Sending SIGINT to $attacker"
-      ssh ukko003 kill -2 $attacker
+      ssh $node kill -2 $attacker
     fi
   done
 
