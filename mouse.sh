@@ -25,9 +25,9 @@ ssh -o StrictHostKeyChecking=no $node nc -l $portnumber -k| while read msg;
   do
     echo "Received message: $msg"
     if [[ $msg == "MEOW" ]]; then
-      attacker=$(ssh $node ps -u $(whoami) | grep "chase_cat.sh" | awk '{print $1}')
+      attacker=$(ssh -o StrictHostKeyChecking=no $node ps -u $(whoami) | grep "chase_cat.sh" | awk '{print $1}')
       echo "Got caught! Sending SIGINT to $attacker"
-      ssh $node kill -2 $attacker
+      ssh -o StrictHostKeyChecking=no $node kill -2 $attacker
     fi
   done
 

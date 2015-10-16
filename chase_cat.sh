@@ -5,7 +5,7 @@
 
 # Informing Listy after receiving SIGINT (result from attacking mouse.sh)
 function got_mouse {
-  echo 'G $(hostname) $(<attacking_cat)'| nc -w 1 $(<listy_location) $(<nc_port_number)
+  echo "G $(hostname) $(<attacking_cat)"| nc -w 1 $(<listy_location) $(<nc_port_number)
   echo "Caught SIGINT (probably from Mousie Mouse)"
   rm attacking_cat
 }
@@ -38,18 +38,17 @@ fi
 
 # Variables for operations
 portnumber=$(<nc_port_number)
-operation=$1
 catname=$2
 
 # Searching a node, searching for mouse listening on the specified port
 # Result is reported to Listy via nc
-if [[ operation == "S" ]]; then
+if [[ $1 == "S" ]]; then
   sleep 12
   ps -f -u $(whoami) > temp_output
-  if [[ grep --quiet "nc -l $portnumber" temp_output ]]; then
-    result="F $(localhost) $catname"
+  if grep -q -e "nc -l $portnumber" "temp_output"; then
+    result="F $(hostname) $catname"
   else
-    result="N $(localhost) $catname"
+    result="N $(hostname) $catname"
   fi
 
   echo $result | nc -w 1 $(<listy_location) $(<nc_port_number)
@@ -57,7 +56,7 @@ if [[ operation == "S" ]]; then
 fi
 
 # Attacking mouse on a node with MEOW. Attacking cat is saved to file for SIGINT actions
-if [[ operation == "A" ]]; then
+if [[ $1 == "A" ]]; then
   sleep 6
   echo $catname > attacking_cat
   echo "MEOW" | nc -w 1 localhost $portnumber
