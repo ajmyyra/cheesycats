@@ -6,7 +6,6 @@
 # Informing Listy after receiving SIGINT (result from attacking mouse.sh)
 function got_mouse {
   echo "G $(hostname) $(<attacking_cat)"| nc -w 1 $(<listy_location) $(<nc_port_number)
-  echo "Caught SIGINT (probably from Mousie Mouse)"
   rm attacking_cat
 }
 trap got_mouse 2
@@ -44,15 +43,15 @@ catname=$2
 # Result is reported to Listy via nc
 if [[ $1 == "S" ]]; then
   sleep 12
-  ps -f -u $(whoami) > temp_output
-  if grep -q -e "nc -l $portnumber" "temp_output"; then
+  ps -f -u $(whoami) > $catname.temp_output
+  if grep -q -e "nc -l $portnumber" "$catname.temp_output"; then
     result="F $(hostname) $catname"
   else
     result="N $(hostname) $catname"
   fi
 
   echo $result | nc -w 1 $(<listy_location) $(<nc_port_number)
-  rm temp_output
+  rm $catname.temp_output
 fi
 
 # Attacking mouse on a node with MEOW. Attacking cat is saved to file for SIGINT actions
