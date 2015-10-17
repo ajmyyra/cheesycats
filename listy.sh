@@ -13,6 +13,7 @@ trap finished 2
 # Saving port number for nc usage and location to file for others to use
 portnumber=$(<nc_port_number)
 echo $(hostname) > listy_location
+echo "Listening for messages at $(hostname)"
 
 # Listening on the specified port and logging incoming messages from Catty and Jazzy
 nc -l $portnumber -k| while read msg;
